@@ -5,17 +5,16 @@
 let bc = require("process");
 let fs = require("fs");
 let direction = require("path");
-const { dir } = require("console");
 var output = bc.argv;
 var Arr = output.slice(2);
 console.log(Arr); //input array
 
-let typesOfFile={
-  media : ["mp4",'mkv'],
-  Pictures:['jpg','png','heic'],
-  documents:['pdf','doc','txt','ps','odf','odp','odg','xlsx','docx'],
-  app:['exe','dmg','pkg','deb']
-}
+let typesOfFile = {
+  media: ["mp4", "mkv"],
+  Pictures: ["jpg", "png", "heic"],
+  documents: ["pdf", "doc", "txt", "ps", "odf", "odp", "odg", "xlsx", "docx"],
+  app: ["exe", "dmg", "pkg", "deb"],
+};
 
 // array would contain atmost 2elements
 
@@ -26,9 +25,6 @@ let instruction = Arr[0];
 // 3)help
 
 switch (instruction) {
-  case "insert":
-    toInsert(Arr[1]);
-    break;
   case "organize":
     organize(Arr[1]);
     break;
@@ -39,7 +35,6 @@ switch (instruction) {
     console.log("say a  proper command");
 }
 
-function toInsert(command) {}
 function organize(command) {
   // first to make folder in the given path
   //to identify all the files present in the folder
@@ -67,30 +62,45 @@ function toOrganize(dirPath, desPath) {
   var list = fs.readdirSync(dirPath);
   // console.log(list);
   for (let i = 0; i < list.length; i++) {
-    let fileAdress=direction.join(dirPath,list[i]);
-    let isItemsAreFileOrNot=fs.lstatSync(fileAdress).isFile();
-    if(isItemsAreFileOrNot==true){
-      let category=getcategory(list[i]);
+    let fileAdress = direction.join(dirPath, list[i]);
+    let isItemsAreFileOrNot = fs.lstatSync(fileAdress).isFile();
+    if (isItemsAreFileOrNot == true) {
+      let category = getcategory(list[i]);
+      // console.log(list[i],'category is =>',category);
+      shifting(dirPath, desPath, category);
     }
-
-
-
   }
+}
+function shifting(src, des, cat) {
+  let catPath = direction.join(des, cat);
+  // console.log(catPath);
+  if (fs.existsSync(catPath) == false) {
+    fs.mkdirSync(catPath);
+  }
+  let file = direction.basename(src);
+  let destinationfile = direction.join(catPath, file);
+  fs.copyFileSync(src,destinationfile);
+  console.log(file, "copy to", cat);
 }
 
 function help() {
   console.log(`
             Your avalaible commands are:
-            insert 'path'
             organize 'path'
             help
     `);
 }
 
 function getcategory(filenames) {
-  let ext=direction.extname(filenames);
-  ext=ext.slice(1);
-  for(let key in typesOfFile){
-      let currentType=typesOfFile[key]
+  let ext = direction.extname(filenames);
+  ext = ext.slice(1);
+  for (let key in typesOfFile) {
+    let currentTypeArr = typesOfFile[key];
+    for (let i = 0; i < currentTypeArr.length; i++) {
+      if (ext == currentTypeArr[i]) {
+        return key;
+      }
+    }
   }
+  return "others";
 }
